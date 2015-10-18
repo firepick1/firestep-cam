@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo
-echo "CMD	: `pwd`/prereq.sh"
+echo "CMD	: `pwd`/scripts/prereq.sh"
 echo "INFO	: Installing prerequisites"
 echo "INFO	: `date`"
 
 if [ "$SUDO_USER" != "" ]; then
   echo "ERROR	: This script must be run by non-root user"
-  echo "TRY	:   ./prereq.sh"
+  echo "TRY	:   scripts/prereq.sh"
   exit -1
 fi
 
