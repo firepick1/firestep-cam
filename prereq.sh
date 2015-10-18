@@ -3,7 +3,6 @@
 echo
 echo "CMD	: `pwd`/prereq.sh"
 echo "INFO	: Installing prerequisites for firestep-cam"
-echo "WARN	: This script invokes sudo to change your system" 
 echo "INFO	: `date`"
 
 if [ "$SUDO_USER" != "" ]; then
@@ -11,6 +10,12 @@ if [ "$SUDO_USER" != "" ]; then
   echo "TRY	:   ./prereq.sh"
   exit -1
 fi
+
+read -p "WARN	: This script invokes sudo to change your system. Type \"y\" to proceed: " SUDOOK
+if [ "$SUDOOK" != "y" ]; then
+	exit -1;
+fi
+
 
 if [ "$(type -p firestep)" == "" ]; then
 	echo "INSTALL	: firestep"

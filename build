@@ -25,7 +25,8 @@ done
 
 if [ "$(type -p firestep)" == "" ]; then
 	echo "ERROR	: firestep not installed"
-	echo "TRY	: sudo prereq.sh"
+	echo "TRY	: ./prereq.sh"
+	exit -1
 fi
 
 echo "OK	: build complete"
