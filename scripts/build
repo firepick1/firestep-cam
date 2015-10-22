@@ -1,8 +1,6 @@
 #!/bin/bash
 
-echo
-echo "CMD	: `pwd`/scripts/build"
-echo "DATE	: `date`"
+echo -e "\nSTART\t: `pwd`/$0\t`date`"
 
 function help() {
   echo "Build firestep-cam"
@@ -35,6 +33,6 @@ if [ "$(type -p node)" == "" ]; then
 fi
 
 
-echo "OK	: build complete"
+echo -e "END\t: `pwd`/$0\t`date`"
 
 exit -1

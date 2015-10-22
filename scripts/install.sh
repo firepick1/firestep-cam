@@ -1,22 +1,20 @@
 #!/bin/bash
 
-echo
-echo "CMD	: `pwd`/scripts/prereq.sh"
-echo "INFO	: Installing prerequisites"
-echo "INFO	: `date`"
+echo -e "\nSTART\t: `pwd`/$0\t `date`"
 
 if [ "$SUDO_USER" != "" ]; then
   echo "ERROR	: This script must be run by non-root user"
-  echo "TRY	:   scripts/prereq.sh"
+  echo "TRY	:   scripts/install.sh"
   exit -1
 fi
 
-read -p "WARN	: This script invokes sudo to change your system. Type \"y\" to proceed: " SUDOOK
+read -p "WARN	: This script may use sudo to change your system. Type \"y\" to proceed: " SUDOOK
 if [ "$SUDOOK" != "y" ]; then
+    echo -e "END\t: `pwd`/$0 (CANCELLED)"
 	exit -1;
 fi
 
-
+##################### firestep
 if [ "$(type -p firestep)" == "" ]; then
 	echo "INFO	: Installing firestep..."
 	if [ ! -e FireStep ]; then
@@ -25,12 +23,26 @@ if [ "$(type -p firestep)" == "" ]; then
 	pushd FireStep
 	./build
 	sudo make install
+	RC=$?; if [ $RC != 0 ]; then echo "ERROR	: installation failed ($RC)"; exit -1; fi
 	popd
+else
+    echo -e "INFO\t: firestep `firestep --version`"
 fi
 
+####################### nodejs
 if [ "$(type -p node)" == "" ]; then
-	echo "INFO	: Installing nodejs"
-	sudo apt-get install -y nodejs
+	echo "INFO	: Installing nodejs..."
+	sudo apt-get install -y nodejs npm
+	RC=$?; if [ $RC != 0 ]; then echo "ERROR	: installation failed ($RC)"; exit -1; fi
+else
+    echo -e "INFO\t: node `node --version`"
 fi
+echo -e "CMD\t: npm install"
+npm install
 
-echo "DONE	: prerequisites installed."
+######################## END
+echo -e "END\t: `pwd`/$0 (COMPLETE) `date`"
+
+######################## build
+scripts/build
+
