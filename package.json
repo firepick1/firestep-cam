@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "body-parser":"1.14.1",
     "express": "4.13.3",
     "kue": "0.8.11"
   },

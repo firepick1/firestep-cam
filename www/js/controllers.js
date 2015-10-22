@@ -30,7 +30,10 @@ controllers.controller('FireStepCtrl', ['$scope', '$location', 'AlertService', '
             return true;
         }
 
-        firestep.clear_results();
+        console.log("POSTING");
+        firestep.resource_POST("/firestep", '{"sys":""}');
+        console.log("POSTED");
+
 
         service.load_config(scope).then(function(config) {
             console.log("processing config.json");

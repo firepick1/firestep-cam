@@ -1,9 +1,12 @@
 console.log("loading express...");
 var express = require('express');
+var app = express();
 var fs = require('fs');
 var path = require('path');
-var app = express();
-var post_enabled = false;
+var bodyParser = require('body-parser');
+var parser = bodyParser.json();
+//var post_enabled = false;
+
 var firerest = {};
 
 //var kue = require('kue');
@@ -13,6 +16,8 @@ var firerest = {};
 express.static.mime.define({
     'application/json': ['fire']
 });
+
+app.use(parser);
 
 app.all('*', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -46,10 +51,11 @@ app.get('/index.html', function(req, res) {
 });
 
 post_firestep = function(req, res, next) {
-    console.log("INFO\t: firestep");
-    console.dir(req.body);
+    console.log("INFO\t: POST firestep");
+    console.log(req.body);
+    console.log(JSON.stringify(req.body));
 };
-app.post("/firestep", post_firestep);
+app.post("/firestep", parser, post_firestep);
 
 ///////////////////////// CHOOSE HTTP PORT ////////////////////////
 // Choose port 80 if you are comfortable having your web server operate with root-level access
