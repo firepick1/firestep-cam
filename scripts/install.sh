@@ -21,22 +21,20 @@ if [ "$(type -p firestep)" == "" ]; then
 		git clone https://github.com/firepick1/FireStep
 	fi
 	pushd FireStep
-	./build
-	sudo make install
+	scripts/install.sh
+    sudo make install
 	RC=$?; if [ $RC != 0 ]; then echo "ERROR	: installation failed ($RC)"; exit -1; fi
 	popd
-else
-    echo -e "INFO\t: firestep `firestep --version`"
 fi
+echo -e "INFO\t: firestep `firestep --version`"
 
 ####################### nodejs
 if [ "$(type -p node)" == "" ]; then
 	echo "INFO	: Installing nodejs..."
 	sudo apt-get install -y nodejs npm
 	RC=$?; if [ $RC != 0 ]; then echo "ERROR	: installation failed ($RC)"; exit -1; fi
-else
-    echo -e "INFO\t: node `node --version`"
 fi
+echo -e "INFO\t: node `node --version`"
 echo -e "CMD\t: npm install"
 npm install
 
