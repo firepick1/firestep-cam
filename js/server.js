@@ -20,12 +20,12 @@ app.all('*', function(req, res, next) {
     next();
 });
 
-var __appdir = path.join(__dirname,"../www");
+var __appdir = path.join(__dirname, "../www");
 
 var dirs = ['bootstrap', 'html', 'img', 'css', 'js', 'lib', 'partials'];
 for (var i = 0; i < dirs.length; i++) {
     var urlpath = '/firerest/' + dirs[i];
-    var filepath = path.join(__appdir,dirs[i]);
+    var filepath = path.join(__appdir, dirs[i]);
     app.use(urlpath, express.static(filepath));
     console.log("INFO\t: Mapping urlpath:" + urlpath + " to:" + filepath);
 }
@@ -33,10 +33,10 @@ for (var i = 0; i < dirs.length; i++) {
 //app.use('/www', express.static(__appdir));
 //app.use('/firerest/index.html', express.static(__appdir + "/html/index.html"));
 app.get('/firerest/index.html', function(req, res) {
-    res.sendFile(path.join(__appdir,'html/index.html'));
+    res.sendFile(path.join(__appdir, 'html/index.html'));
 });
 app.get('/firestep', function(req, res) {
-    res.sendFile(path.join(__appdir,'html/firestep.html'));
+    res.sendFile(path.join(__appdir, 'html/firestep.html'));
 });
 app.get('/', function(req, res) {
     res.redirect('/firerest/index.html');
@@ -46,8 +46,8 @@ app.get('/index.html', function(req, res) {
 });
 
 post_firestep = function(req, res, next) {
-	console.log("INFO\t: firestep");
-	console.dir(req.body);
+    console.log("INFO\t: firestep");
+    console.dir(req.body);
 };
 app.post("/firestep", post_firestep);
 

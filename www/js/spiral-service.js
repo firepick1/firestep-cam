@@ -1,22 +1,22 @@
 var firepick;
 
-(function (firepick) {
-    var SpiralIterator = (function () {
+(function(firepick) {
+    var SpiralIterator = (function() {
         function SpiralIterator(xSteps, ySteps) {
-	  if (!(xSteps > 0 && ySteps > 0)) throw "assert failed";
-	  this.xSteps = xSteps;
-	  this.ySteps = ySteps;
-	  this.xMax = xSteps/2;
-	  this.yMax = ySteps ? ySteps/2 : this.xMax;
-	  this.xScale = 1;
-	  this.yScale = 1;
-	  this.xOffset = 0;
-	  this.yOffset = 0;
-	  if (!(ySteps == 0 || ySteps == 1 || xSteps == 1 || ySteps == xSteps)) throw "assert failed";
-	  this.reset();
+            if (!(xSteps > 0 && ySteps > 0)) throw "assert failed";
+            this.xSteps = xSteps;
+            this.ySteps = ySteps;
+            this.xMax = xSteps / 2;
+            this.yMax = ySteps ? ySteps / 2 : this.xMax;
+            this.xScale = 1;
+            this.yScale = 1;
+            this.xOffset = 0;
+            this.yOffset = 0;
+            if (!(ySteps == 0 || ySteps == 1 || xSteps == 1 || ySteps == xSteps)) throw "assert failed";
+            this.reset();
         }
-        SpiralIterator.prototype.clone = function () {
-	  return new SpiralIterator(this.xSteps, this.ySteps);
+        SpiralIterator.prototype.clone = function() {
+            return new SpiralIterator(this.xSteps, this.ySteps);
         };
 
         return SpiralIterator;

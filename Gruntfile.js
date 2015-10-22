@@ -7,7 +7,7 @@ module.exports = function(grunt) {
                 options: {
                     //reporter:'list',
                     //reporter:'dot',
-					reporter:'min',
+                    reporter: 'min',
                     captureFile: 'results.txt',
                     quiet: true,
                     clearRequireCache: true
@@ -40,7 +40,7 @@ module.exports = function(grunt) {
             all: ['Gruntfile.js', '**/*.js']
         },
         jsbeautifier: {
-            files: ["Gruntfile.js", "server/**/*.js"],
+            files: ["Gruntfile.js", "js/**/*.js", "www/js/*.js"],
             options: {
                 wrap_line_length: 50,
                 keep_array_indentation: true
