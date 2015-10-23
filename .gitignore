@@ -1,4 +1,5 @@
 *.class
+*.wiki
 FireStep
 target
 node_modules
