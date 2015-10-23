@@ -35,13 +35,11 @@ for (var i = 0; i < dirs.length; i++) {
     console.log("INFO\t: Mapping urlpath:" + urlpath + " to:" + filepath);
 }
 
-//app.use('/www', express.static(__appdir));
-//app.use('/firerest/index.html', express.static(__appdir + "/html/index.html"));
 app.get('/firerest/index.html', function(req, res) {
     res.sendFile(path.join(__appdir, 'html/index.html'));
 });
-app.get('/firestep', function(req, res) {
-    res.sendFile(path.join(__appdir, 'html/firestep.html'));
+app.get('/firestep/model', function(req, res) {
+    res.send(firestep.model());
 });
 app.get('/', function(req, res) {
     res.redirect('/firerest/index.html');
@@ -64,4 +62,3 @@ var firerest_port = 8080; // node server/firerest.js
 
 app.listen(firerest_port);
 console.log('INFO\t: firestep-cam REST service listening on port ' + firerest_port);
-
