@@ -55,10 +55,30 @@ post_firestep = function(req, res, next) {
 };
 app.post("/firestep", parser, post_firestep);
 
-///////////////////////// CHOOSE HTTP PORT ////////////////////////
-// Choose port 80 if you are comfortable having your web server operate with root-level access
-//var firerest_port=80; // sudo node server/firerest.js
-var firerest_port = 8080; // node server/firerest.js
+var firerest_port;
 
-app.listen(firerest_port);
-console.log('INFO\t: firestep-cam REST service listening on port ' + firerest_port);
+process.on('uncaughtException', function(error) {
+    console.log("ERROR\t: " + error.message);
+    throw error;
+});
+
+var listener = app.listen(80, function(data) {
+    firerest_port = 80;
+    console.log('INFO\t: firestep-cam REST service listening on port ' + firerest_port + ' data:' + data);
+});
+listener.on('error', function(error) {
+    if (error.code === "EACCES") {
+        console.log("WARN\t: insufficient user privilege for port 80 (trying 8080) ...");
+        listener = app.listen(8080, function(data) {
+            firerest_port = 8080;
+            console.log('INFO\t: firestep-cam REST service listening on port ' + firerest_port);
+        });
+    } else {
+        console.log("ERROR\t: listener:" + JSON.stringify(error));
+        throw error;
+    }
+});
+
+process.on('exit', function(data) {
+    console.log("END\t: Exit with code:" + data);
+});

@@ -4,10 +4,23 @@ var serialport = require("serialport");
 var firepick = firepick || {};
 (function(firepick) {
     var FireStepDriver = (function() {
-        ///////////////////////// local variables
-        var model = {};
-        var queue = [];
-        
+        ///////////////////////// private instance variables
+        var serial;
+        var model = {
+            serialIdle: true,
+            queue: []
+        };
+
+        var processQueue = function() {
+            if (model.serialIdle && model.queue[0]) {
+                model.serialIdle = false;
+                var jobj = model.queue.shift();
+                var cmd = JSON.stringify(jobj);
+                console.log("WRITE\t: " + cmd + "\\n");
+                serial.write(cmd);
+                serial.write("\n");
+            }
+        };
 
         ////////////////////////// FireStep commands
         var CMD_ID = {
@@ -53,7 +66,7 @@ var firepick = firepick || {};
             options.baudrate = options.baudrate || 19200;
 
             that.serialPath = options.serialPath;
-            that.serial = new serialport.SerialPort(that.serialPath, {
+            serial = new serialport.SerialPort(that.serialPath, {
                 buffersize: options.buffersize,
                 parser: serialport.parsers.readline('\n'),
                 baudrate: options.baudrate
@@ -67,15 +80,19 @@ var firepick = firepick || {};
                     that.send(CMD_HOME);
                 }
             });
-            that.serial.on("data", function(error) {
+            serial.on("data", function(error) {
                 onData(that, error);
             });
             console.log("INFO\t: FireStepDriver(" + that.serialPath + ")");
             return that;
         }
+
         function onData(that, data) {
             console.log("READ\t: " + data + "\\n");
-            if (typeof data === "string" && data.indexOf('{"s":0,"r":{') === 0) { // success
+            if (typeof data !== 'string') {
+                throw new Error("expected Javascroitp string for serial data return");
+            }
+            if (data.indexOf('{"s":0,"r":{') === 0) { // success
                 var jdata = JSON.parse(data);
                 var r = jdata.r;
                 model.id = r.id || model.id;
@@ -88,16 +105,18 @@ var firepick = firepick || {};
                 model.y = r.y || model.y;
                 model.z = r.z || model.z;
                 model.mpo = r.mpo || model.mpo;
-                //console.log("MODEL\t:" + JSON.stringify(model));
-
-                if (queue[0]) {
-                    var jobj = queue.shift();
-                    var cmd = JSON.stringify(jobj);
-                    console.log("WRITE\t: " + cmd + "\\n");
-                    that.serial.write(cmd);
-                    that.serial.write("\n");
-                }
             }
+            if (data.indexOf('{"s":-') === 0) { // failure
+                model.queue = [];
+                console.log("ERROR\t: " + data);
+                console.log("INFO\t: command queue cleared and ready for next command.");
+            }
+
+            if (data[data.length-1] === ' ') { // FireStep idle is SPACE-LF
+                model.serialIdle = true;
+                processQueue();
+            }
+
             return that;
         };
 
@@ -110,11 +129,12 @@ var firepick = firepick || {};
             var that = this;
             if (jobj instanceof Array) {
                 for (var i = 0; i < jobj.length; i++) {
-                    queue.push(jobj[i]);
+                    model.queue.push(jobj[i]);
                 }
             } else {
-                queue.push(jobj);
+                model.queue.push(jobj);
             }
+            processQueue();
             return that;
         }
         return FireStepDriver;
