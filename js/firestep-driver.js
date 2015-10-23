@@ -6,15 +6,18 @@ var firepick = firepick || {};
     var FireStepDriver = (function() {
         ///////////////////////// private instance variables
         var serial;
-        var model = {
-            serialIdle: true,
-            queue: []
-        };
+        var serialQueue = [];
+        var serialIdle = true;
+        var serialHistory = [];
+        var model = {};
 
         var processQueue = function() {
-            if (model.serialIdle && model.queue[0]) {
-                model.serialIdle = false;
-                var jobj = model.queue.shift();
+            if (serialIdle && serialQueue[0]) {
+                serialIdle = false;
+                var jobj = serialQueue.shift();
+                serialHistory.splice(0, 0, {
+                    "cmd": jobj
+                });
                 var cmd = JSON.stringify(jobj);
                 console.log("WRITE\t: " + cmd + "\\n");
                 serial.write(cmd);
@@ -55,7 +58,10 @@ var firepick = firepick || {};
         }, {
             "mpo": ""
         }];
-        var CMD_MODEL = [CMD_ID, CMD_SYS, CMD_DIM, CMD_A, CMD_B, CMD_C, CMD_X, CMD_Y, CMD_Z];
+        var CMD_SYNC = {
+            "cmt": "synchronize serial"
+        };
+        var CMD_MODEL = [CMD_SYNC, CMD_ID, CMD_SYS, CMD_DIM, CMD_A, CMD_B, CMD_C, CMD_X, CMD_Y, CMD_Z];
 
         ////////////////// constructor
         function FireStepDriver(options) {
@@ -70,7 +76,11 @@ var firepick = firepick || {};
                 buffersize: options.buffersize,
                 parser: serialport.parsers.readline('\n'),
                 baudrate: options.baudrate
-            }, true, function(error) {
+            }, false);
+            serial.on("data", function(error) {
+                onSerialData(that, error);
+            });
+            serial.open(function(error) {
                 that.error = error;
                 if (error) {
                     console.log("ERROR\t: FireStepDriver.open(" + that.serialPath + ") failed:" + error);
@@ -80,17 +90,14 @@ var firepick = firepick || {};
                     that.send(CMD_HOME);
                 }
             });
-            serial.on("data", function(error) {
-                onData(that, error);
-            });
             console.log("INFO\t: FireStepDriver(" + that.serialPath + ")");
             return that;
         }
 
-        function onData(that, data) {
+        function onSerialData(that, data) {
             console.log("READ\t: " + data + "\\n");
             if (typeof data !== 'string') {
-                throw new Error("expected Javascroitp string for serial data return");
+                throw new Error("expected Javascript string for serial data return");
             }
             if (data.indexOf('{"s":0,"r":{') === 0) { // success
                 var jdata = JSON.parse(data);
@@ -107,19 +114,23 @@ var firepick = firepick || {};
                 model.mpo = r.mpo || model.mpo;
             }
             if (data.indexOf('{"s":-') === 0) { // failure
-                model.queue = [];
+                serialQueue = [];
                 console.log("ERROR\t: " + data);
                 console.log("INFO\t: command queue cleared and ready for next command.");
             }
 
-            if (data[data.length-1] === ' ') { // FireStep idle is SPACE-LF
-                model.serialIdle = true;
+            if (!serialIdle && data[data.length - 1] === ' ') { // FireStep idle is SPACE-LF
+                serialIdle = true;
+                serialHistory[0].resp = JSON.parse(data);
                 processQueue();
             }
 
             return that;
         };
 
+        FireStepDriver.prototype.history = function() {
+            return serialHistory;
+        }
         FireStepDriver.prototype.model = function() {
             var that = this;
             that.send(CMD_MODEL);
@@ -129,10 +140,10 @@ var firepick = firepick || {};
             var that = this;
             if (jobj instanceof Array) {
                 for (var i = 0; i < jobj.length; i++) {
-                    model.queue.push(jobj[i]);
+                    serialQueue.push(jobj[i]);
                 }
             } else {
-                model.queue.push(jobj);
+                serialQueue.push(jobj);
             }
             processQueue();
             return that;

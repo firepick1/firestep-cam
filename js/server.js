@@ -38,9 +38,6 @@ for (var i = 0; i < dirs.length; i++) {
 app.get('/firerest/index.html', function(req, res) {
     res.sendFile(path.join(__appdir, 'html/index.html'));
 });
-app.get('/firestep/model', function(req, res) {
-    res.send(firestep.model());
-});
 app.get('/', function(req, res) {
     res.redirect('/firerest/index.html');
 });
@@ -48,12 +45,21 @@ app.get('/index.html', function(req, res) {
     res.redirect('/firerest/index.html');
 });
 
+//////////// REST protocol
+app.get('/firestep/model', function(req, res) {
+    res.send(firestep.model());
+});
+app.get('/firestep/history', function(req, res) {
+    res.send(firestep.history());
+});
 post_firestep = function(req, res, next) {
     console.log("INFO\t: POST firestep");
     console.log(req.body);
     console.log(JSON.stringify(req.body));
 };
 app.post("/firestep", parser, post_firestep);
+
+/////////// Startup
 
 var firerest_port;
 
