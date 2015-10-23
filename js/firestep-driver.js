@@ -9,6 +9,7 @@ var firepick = firepick || {};
         var serialQueue = [];
         var serialIdle = true;
         var serialHistory = [];
+        var maxHistory = 50;
         var model = {};
 
         var processQueue = function() {
@@ -18,6 +19,7 @@ var firepick = firepick || {};
                 serialHistory.splice(0, 0, {
                     "cmd": jobj
                 });
+                serialHistory.splice(maxHistory);
                 var cmd = JSON.stringify(jobj);
                 console.log("WRITE\t: " + cmd + "\\n");
                 serial.write(cmd);
@@ -70,7 +72,9 @@ var firepick = firepick || {};
             options.serialPath = options.serialPath || "/dev/ttyACM0";
             options.buffersize = options.buffersize || 255;
             options.baudrate = options.baudrate || 19200;
+            options.maxHistory = options.maxHistory || maxHistory;
 
+            maxHistory = options.maxHistory;
             that.serialPath = options.serialPath;
             serial = new serialport.SerialPort(that.serialPath, {
                 buffersize: options.buffersize,
