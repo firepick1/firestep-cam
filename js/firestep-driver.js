@@ -7,14 +7,14 @@ var firepick = firepick || {};
         ///////////////////////// private instance variables
         var serial;
         var serialQueue = [];
-        var serialIdle = true;
+        var serialInProgress = false;
         var serialHistory = [];
         var maxHistory = 50;
         var model = {};
 
         var processQueue = function() {
-            if (serialIdle && serialQueue[0]) {
-                serialIdle = false;
+            if (!serialInProgress && serialQueue[0]) {
+                serialInProgress = true;
                 var jobj = serialQueue.shift();
                 serialHistory.splice(0, 0, {
                     "cmd": jobj
@@ -73,6 +73,7 @@ var firepick = firepick || {};
             options.buffersize = options.buffersize || 255;
             options.baudrate = options.baudrate || 19200;
             options.maxHistory = options.maxHistory || maxHistory;
+            options.onIdle = options.onIdle || onIdle;
 
             maxHistory = options.maxHistory;
             that.serialPath = options.serialPath;
@@ -82,7 +83,7 @@ var firepick = firepick || {};
                 baudrate: options.baudrate
             }, false);
             serial.on("data", function(error) {
-                onSerialData(that, error);
+                onSerialData(error);
             });
             serial.open(function(error) {
                 that.error = error;
@@ -98,7 +99,14 @@ var firepick = firepick || {};
             return that;
         }
 
-        function onSerialData(that, data) {
+        var onIdle = function() {
+            var that = this;
+            console.log("INFO\t: onIdle...");
+            return that;
+        }
+
+        var onSerialData = function(data) {
+            var that = this;
             console.log("READ\t: " + data + "\\n");
             if (typeof data !== 'string') {
                 throw new Error("expected Javascript string for serial data return");
@@ -123,8 +131,11 @@ var firepick = firepick || {};
                 console.log("INFO\t: command queue cleared and ready for next command.");
             }
 
-            if (!serialIdle && data[data.length - 1] === ' ') { // FireStep idle is SPACE-LF
-                serialIdle = true;
+            if (serialInProgress && data[data.length - 1] === ' ') { // FireStep idle is SPACE-LF
+                serialInProgress = false;
+                if (serialQueue.length == 0) {
+                    onIdle();
+                }
                 serialHistory[0].resp = JSON.parse(data);
                 processQueue();
             }
