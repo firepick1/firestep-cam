@@ -17,11 +17,8 @@ fi
 ##################### firestep
 if [ "$(type -p firestep)" == "" ]; then
 	echo "INFO	: Installing firestep..."
-	if [ ! -e FireStep ]; then
-		git clone https://github.com/firepick1/FireStep
-	fi
-	pushd FireStep
-	scripts/install.sh
+    pushd cli
+    ./build
     sudo make install
 	RC=$?; if [ $RC != 0 ]; then echo "ERROR	: installation failed ($RC)"; exit -1; fi
 	popd
