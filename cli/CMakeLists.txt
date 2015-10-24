@@ -60,7 +60,7 @@ endforeach()
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/src/version.h.in"
-  "${BUILD_TARGET_DIR}/:ersion.h"
+  "${BUILD_TARGET_DIR}/version.h"
   )
 
 message("CMAKE_PREFIX_PATH:${CMAKE_PREFIX_PATH}")
@@ -86,7 +86,3 @@ set(FIRESTEP_INSTALL_BIN_DIR		bin CACHE PATH "Installation directory for executa
 set(FIRESTEP_INSTALL_INCLUDE_DIR	include CACHE PATH "Installation directory for header files")
 
 INSTALL(TARGETS firestep DESTINATION ${FIRESTEP_INSTALL_BIN_DIR})
-INSTALL(FILES 
-	src/version.h
-
-DESTINATION ${FIRESTEP_INSTALL_INCLUDE_DIR}/firestep)
