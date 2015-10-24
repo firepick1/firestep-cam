@@ -1,5 +1,6 @@
 *.class
 *.wiki
+version.h
 FireStep
 target
 node_modules
