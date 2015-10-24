@@ -46,7 +46,14 @@ if [ "$(type -p node)" == "" ]; then
 	RC=$?; if [ $RC != 0 ]; then echo "ERROR\t: installation failed ($RC)"; exit -1; fi
     if [ "$(type -p node)" == "" ]; then
         echo "WARN\t: node unavailable, creating symlink"
-        cmd "sudo ln -s /usr/local/bin/nodejs /usr/local/bin/node"
+        if [ -e /usr/bin/nodejs ]; then
+            cmd "sudo ln -s /usr/bin/nodejs /usr/bin/node"
+        elif [ -e /usr/local/bin/nodejs ]; then
+            cmd "sudo ln -s /usr/local/bin/nodejs /usr/local/bin/node"
+        else
+            echo "ERROR\t: could not create symlink to nodejs"
+            exit -1
+        fi
     else
         cmd "npm install serialport@2.0.2", "echo -e 'INFO\t: using firestep cli'"
     fi
