@@ -178,7 +178,11 @@ var firepick = firepick || {};
                 if (serialQueue.length == 0) {
                     onIdle();
                 }
-                serialHistory[0].resp = JSON.parse(data);
+                try {
+                    serialHistory[0].resp = JSON.parse(data);
+                } catch(e) {
+                    console.log("WARN\t: JSON.parse(" + data + ")" + "syntax error");
+                }
                 processQueue();
             }
 
