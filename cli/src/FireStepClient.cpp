@@ -87,8 +87,9 @@ int FireStepClient::console() {
     if (rc != 0) {
         return rc;
     }
-    //cerr << "INFO\t: isatty:" << (isatty(fileno(stdin)) ? "true" : "false") << endl;
-    cerr << "INFO\t: Enter \"quit\" to exit" << endl;
+    if (prompt) {
+        cerr << "INFO\t: Enter \"quit\" to exit" << endl;
+    }
 
     for (;;) {
         if (prompt) {

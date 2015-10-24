@@ -1,10 +1,18 @@
 console.log("loading FireStepDriver");
-var serialport = require("serialport");
+var child_process = require('child_process');
+var serialport;
+
+try {
+    serialport = require("serialport");
+} catch (e) {
+    serialport = null; // failover
+}
 
 var firepick = firepick || {};
 (function(firepick) {
     var FireStepDriver = (function() {
         ///////////////////////// private instance variables
+        var child;
         var serial;
         var serialQueue = [];
         var serialInProgress = false;
@@ -22,8 +30,16 @@ var firepick = firepick || {};
                 serialHistory.splice(maxHistory);
                 var cmd = JSON.stringify(jobj);
                 console.log("WRITE\t: " + cmd + "\\n");
-                serial.write(cmd);
-                serial.write("\n");
+                if (serial) {
+                    serial.write(cmd);
+                    serial.write("\n");
+                } else if (child) {
+                    child.stdin.write(cmd);
+                    child.stdin.write("\n");
+                } else {
+                    throw new Error("FireStep serial connection unavailable");
+                }
+
             }
         };
 
@@ -77,25 +93,51 @@ var firepick = firepick || {};
 
             maxHistory = options.maxHistory;
             that.serialPath = options.serialPath;
-            serial = new serialport.SerialPort(that.serialPath, {
-                buffersize: options.buffersize,
-                parser: serialport.parsers.readline('\n'),
-                baudrate: options.baudrate
-            }, false);
-            serial.on("data", function(error) {
-                onSerialData(error);
-            });
-            serial.open(function(error) {
-                that.error = error;
-                if (error) {
-                    console.log("ERROR\t: FireStepDriver.open(" + that.serialPath + ") failed:" + error);
-                } else {
-                    console.log("OPEN\t: " + that.serialPath + " (reading...)");
-                    that.send(CMD_MODEL);
-                    that.send(CMD_HOME);
-                }
-            });
-            console.log("INFO\t: FireStepDriver(" + that.serialPath + ")");
+            console.log("INFO\t: FireStepDriver(" + that.serialPath + ") ...");
+            if (serialport) {
+                console.log("INFO\t: opening serialport");
+                serial = new serialport.SerialPort(that.serialPath, {
+                    buffersize: options.buffersize,
+                    parser: serialport.parsers.readline('\n'),
+                    baudrate: options.baudrate
+                }, false);
+                serial.on("data", function(data) {
+                var jdata = JSON.parse(data);
+                    onSerialData(data);
+                });
+                serialInProgress = true;
+                serial.open(function(error) {
+                    that.error = error;
+                    if (error) {
+                        throw new Error("FireStepDriver.open(" + that.serialPath + ") failed:" + error);
+                    }
+                    console.log("INFO\t: SerialPort.open(" + that.serialPath + ") Reading...");
+                    serialInProgress = false;
+                    processQueue();
+                });
+            } else {
+                console.log("WARN\t: serialport unavailable, failing over to firestep cli");
+                child = child_process.spawn('firestep',['-d', that.serialPath]);
+                child.on('error', function(data) {
+                    throw new Error("could not spawn firestep cli process:" + data);
+                });
+                child.on('close', function() {
+                    console.log("INFO\t: closing firestep cli processl");
+                });
+                child.stdout.on('data', function(buffer) {
+                    var data = buffer.toString();
+                    data = data.substr(0,data.length-1); // chop LF to match serialport
+                    //console.log("STDOUT\t: " + data);
+                    onSerialData(data);
+                });
+                child.stderr.on('data', function(data) {
+                    console.log("STDERR\t: " + data);
+                });
+                console.log("INFO\t: spawned firestep cli pid:" + child.pid);
+                console.log("INFO\t: firestep cli spawned. Reading...");
+            }
+            that.send(CMD_MODEL);
+            that.send(CMD_HOME);
             return that;
         }
 

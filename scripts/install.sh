@@ -14,6 +14,20 @@ if [ "$SUDOOK" != "y" ]; then
 	exit -1;
 fi
 
+function cmd() {
+    echo -e "CMD\t: $1"
+    $1
+    RC=$?; 
+    if [ $RC != 0 ]; then 
+        echo "ERROR\t: $1 => $RC"; 
+        if [ "$2" == "" ]; then 
+            exit -1; 
+        else
+            $2
+        fi
+    fi
+}
+
 ##################### firestep
 if [ "$(type -p firestep)" == "" ]; then
 	echo "INFO	: Installing firestep..."
@@ -29,11 +43,16 @@ echo -e "INFO\t: firestep `firestep --version`"
 if [ "$(type -p node)" == "" ]; then
 	echo "INFO	: Installing nodejs..."
 	sudo apt-get install -y nodejs npm
-	RC=$?; if [ $RC != 0 ]; then echo "ERROR	: installation failed ($RC)"; exit -1; fi
+	RC=$?; if [ $RC != 0 ]; then echo "ERROR\t: installation failed ($RC)"; exit -1; fi
+    if [ "$(type -p node)" == "" ]; then
+        echo "WARN\t: node unavailable, creating symlink"
+        cmd "sudo ln -s /usr/local/bin/nodejs /usr/local/bin/node"
+    else
+        cmd "npm install serialport@2.0.2", "echo -e 'INFO\t: using firestep cli'"
+    fi
 fi
 echo -e "INFO\t: node `node --version`"
-echo -e "CMD\t: npm install"
-npm install
+cmd "npm install"
 
 ######################## END
 echo -e "END\t: `pwd`/$0 (COMPLETE) `date`"
