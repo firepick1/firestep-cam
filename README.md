@@ -1,2 +1,3 @@
-# firestep-cam
-NodeJS REST service for motion-controlled camera based on FireStep.
+# DEPRECATED
+See [[http://github.com/firepick1/firenodejs]]
+
